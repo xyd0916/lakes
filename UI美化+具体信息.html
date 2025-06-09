@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>船舶订单动态流向图</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+    <style>
+        /* 保持原有样式不变 */
+        html, body { height: 100%; margin: 0; overflow: hidden; }
+        .container { display: flex; flex-direction: column; height: 100%; }
+        #map-container { flex: 1; position: relative; }
+        #container { width: 100%; height: 100%; }
+        #timeline {
+            height: 100px;
+            background: linear-gradient(180deg, #f0f5ff, #e0ebff);
+            box-shadow: 0 -2px 8px rgba(64, 158, 255, 0.1);
+            padding: 10px 20px;
+            margin-top: 5px;
+        }
+
+        #legend {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            font-size: 14px;
+            z-index: 998;
+        }
+
+        #stats-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 250px;
+            z-index: 999;
+        }
+
+        #stats {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        /* 新增订单详情面板样式 */
+        #order-details {
+            position: fixed;
+            bottom: 120px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 300px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        #order-details.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #order-details h3 {
+            margin: 0 0 10px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        #order-details p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        #order-details .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #order-details .close-btn:hover {
+            color: #333;
+        }
+
+        #order-details .ship-type {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        /* 新增船型筛选面板样式 */
+        #ship-type-filter {
+            position: fixed;
+            top: 10px;
+            left: 200px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            font-size: 14px;
+            z-index: 998;
+        }
+
+        #ship-type-filter h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        #ship-type-filter ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #ship-type-filter li {
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+
+        #ship-type-filter input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        #ship-type-filter .color-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        #ship-type-filter label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 状态提示 */
+        #filter-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #filter-status.show {
+            opacity: 1;
+        }
+
+        .error { color: red; padding: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="map-container">
+            <div id="container"></div>
+            <div id="legend">
+                <strong>船型图例</strong>
+                <ul>
+                    <li style="color:#409EFF;">🟦 集装箱船</li>
+                    <li style="color:#FF6B6B;">🟥 油船</li>
+                    <li style="color:#00BFA5;">🟩 气体船</li>
+                    <li style="color:#FFD166;">🟨 散货船</li>
+                    <li style="color:#909399;">⬜ 其他</li>
+                </ul>
+            </div>
+            <!-- 新增船型筛选面板 -->
+            <div id="ship-type-filter">
+                <h3>船型筛选</h3>
+                <ul>
+                    <li>
+                        <input type="checkbox" id="filter-container" checked onchange="updateFilters()">
+                        <span class="color-dot" style="background-color: #409EFF;"></span>
+                        <label for="filter-container">集装箱船</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="filter-oil" checked onchange="updateFilters()">
+                        <span class="color-dot" style="background-color: #FF6B6B;"></span>
+                        <label for="filter-oil">油船</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="filter-gas" checked onchange="updateFilters()">
+                        <span class="color-dot" style="background-color: #00BFA5;"></span>
+                        <label for="filter-gas">气体船</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="filter-bulk" checked onchange="updateFilters()">
+                        <span class="color-dot" style="background-color: #FFD166;"></span>
+                        <label for="filter-bulk">散货船</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="filter-other" checked onchange="updateFilters()">
+                        <span class="color-dot" style="background-color: #909399;"></span>
+                        <label for="filter-other">其他</label>
+                    </li>
+                </ul>
+                <button onclick="resetFilters()" style="margin-top: 8px; width: 100%; padding: 4px; font-size: 12px;">重置筛选</button>
+            </div>
+            <!-- 新增筛选状态提示 -->
+            <div id="filter-status" class="show">
+                显示全部船型
+            </div>
+            <div id="stats-container">
+                <div id="stats"></div>
+            </div>
+            <!-- 订单详情面板 -->
+            <div id="order-details">
+                <span class="close-btn" onclick="hideOrderDetails()">&times;</span>
+                <h3>订单详情</h3>
+                <p><strong>船东:</strong> <span id="detail-shipowner"></span></p>
+                <p><strong>船厂:</strong> <span id="detail-shipyard"></span></p>
+                <p><strong>船型:</strong> <span class="ship-type" id="detail-ship-type"></span><span id="detail-ship-type-text"></span></p>
+                <p><strong>数量:</strong> <span id="detail-quantity"></span></p>
+                <p><strong>日期:</strong> <span id="detail-date"></span></p>
+                <p><strong>国家:</strong> <span id="detail-country"></span></p>
+            </div>
+        </div>
+        <div id="timeline"></div>
+    </div>
+    <div class="error" id="errorMsg"></div>
+
+    <script>
+        // 全局变量
+        let globalProcessedData = [];
+        let currentChart = null;
+        let currentTimeline = null;
+        let currentStatsChart = null;
+        let currentSelectedRange = null;
+
+        // 筛选状态
+        let filterStatus = {
+            '集装箱船': true,
+            '油船': true,
+            '气体船': true,
+            '散货船': true,
+            '其他': true
+        };
+
+        window.onload = function() {
+            fetch('https://xyd0916.github.io/lakes/中韩.json')
+                .then(response => response.json())
+                .then(data => processData(data))
+                .catch(error => handleError(error));
+        };
+
+        function handleError(error) {
+            console.error("数据加载失败:", error);
+            document.getElementById('errorMsg').textContent = "数据加载失败: " + error.message;
+        }
+
+        function processData(excelData) {
+            if (!excelData || excelData.length === 0) {
+                throw new Error('错误：数据为空！');
+            }
+            console.log("订单数据加载成功！");
+
+            const colorMap = {
+                '集装箱船': '#409EFF',
+                '油船': '#FF6B6B',
+                '气体船': '#00BFA5',
+                '散货船': '#FFD166',
+                '其他': '#909399',
+            };
+
+            const processedData = excelData.map(item => ({
+                ...item,
+                timestamp: new Date(item.date).getTime(),
+                shipownerX: parseFloat(item.shipownerX),
+                shipyardX: parseFloat(item.shipyardX),
+                shipownerY: parseFloat(item.shipownerY),
+                shipyardY: parseFloat(item.shipyardY),
+                lineWidth: Math.max(1, parseFloat(item.quantity) / 3),
+                color: colorMap[item.shipType] || colorMap['其他'],
+                shipType: item.shipType || '其他',
+                country: item.国家 // 获取船厂所在国家
+            }));
+
+            // 存储处理后的数据到全局变量
+            globalProcessedData = processedData;
+
+            console.log("处理后的数据:", processedData);
+
+            // 初始化图表
+            currentChart = echarts.init(document.getElementById('container'));
+            currentTimeline = echarts.init(document.getElementById('timeline'));
+            currentStatsChart = echarts.init(document.getElementById('stats'));
+
+            const uniqueDates = Array.from(new Set(processedData.map(d => d.date))).sort();
+            console.log("时间轴数据:", uniqueDates);
+
+            // 格式化日期函数
+            function formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0];
+                }
+                if (typeof dateString === 'string') {
+                    const dateParts = dateString.split(/[\/\-\s]/);
+                    if (dateParts.length >= 3) {
+                        return dateParts[0] + '-' + dateParts[1] + '-' + dateParts[2];
+                    }
+                    if (dateString.includes(' ')) {
+                        return dateString.split(' ')[0];
+                    }
+                }
+                return dateString;
+            }
+
+            // 美化时间轴
+            currentTimeline.setOption({
+                title: {
+                    text: '订单时间轴',
+                    left: 'center',
+                    textStyle: {
+                        color: '#333',
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    formatter: params => formatDate(params.name),
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    borderColor: '#409EFF',
+                    borderWidth: 1,
+                    padding: 8,
+                    textStyle: {
+                        color: '#333',
+                        fontSize: 12
+                    }
+                },
+                dataZoom: [{
+                    type: 'slider',
+                    start: 0,
+                    end: 10,
+                    backgroundColor: 'rgba(224, 235, 255, 0.5)',
+                    fillerColor: 'rgba(64, 158, 255, 0.2)',
+                    borderColor: '#409EFF',
+                    handleStyle: {
+                        color: '#409EFF',
+                        borderColor: '#fff',
+                        shadowBlur: 2,
+                        shadowColor: 'rgba(0,0,0,0.2)'
+                    },
+                    textStyle: {
+                        color: '#666'
+                    }
+                }],
+                xAxis: {
+                    type: 'category',
+                    data: uniqueDates,
+                    axisLine: {
+                        show: true,
+                        lineStyle: {
+                            color: '#b3d0ff',
+                            width: 1
+                        }
+                    },
+                    axisTick: {
+                        show: true,
+                        alignWithLabel: true,
+                        lineStyle: {
+                            color: '#b3d0ff'
+                        }
+                    },
+                    axisLabel: {
+                        rotate: 0,
+                        margin: 15,
+                        interval: 'auto',
+                        formatter: function(value) {
+                            // 简化日期显示格式，只显示月-日
+                            const date = new Date(value);
+                            if (!isNaN(date.getTime())) {
+                                return (date.getMonth() + 1) + '-' + date.getDate();
+                            }
+                            return value;
+                        },
+                        textStyle: {
+                            color: '#666',
+                            fontSize: 12
+                        }
+                    }
+                },
+                yAxis: {
+                    show: false
+                },
+                series: [{
+                    type: 'line',
+                    showSymbol: false,
+                    lineStyle: {
+                        color: '#409EFF',
+                        width: 2,
+                        opacity: 0.8
+                    },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [{
+                                offset: 0, color: 'rgba(64, 158, 255, 0.2)' // 0% 处的颜色
+                            }, {
+                                offset: 1, color: 'rgba(64, 158, 255, 0)' // 100% 处的颜色
+                            }],
+                            global: false // 缺省为 false
+                        }
+                    }
+                }]
+            });
+
+            currentChart.setOption({
+                title: { text: '全球船舶订单动态流向图', left: 'center' },
+                geo: {
+                    map: 'world',
+                    roam: true,
+                    itemStyle: {
+                        areaColor: '#e6f0ff', // 淡蓝色海洋背景
+                        borderColor: '#b3d0ff', // 浅蓝国界线
+                        emphasis: {
+                            areaColor: '#d0e5ff' // 悬停时加深
+                        }
+                    },
+                    zoom: 1.1, // 缩小初始视角
+                    center: [15, 30], // 地图中心略偏东
+                    label: {
+                        show: false // 隐藏国家文字标签
+                    }
+                },
+                series: [
+                    // 轨迹线系列 - 带尾迹和动画效果
+                    {
+                        type: 'lines',
+                        coordinateSystem: 'geo',
+                        effect: {
+                            show: true,
+                            symbol: 'circle', // 箭头符号改为圆形
+                            symbolSize: 6, // 缩小符号尺寸
+                            color: '#ffffff', // 尾迹光晕白色
+                            trailLength: 0.6, // 缩短尾迹长度
+                            period: 3, // 延长动画周期
+                            constantSpeed: 40, // 降低移动速度
+                            shadowBlur: 8 // 添加高斯模糊光晕
+                        },
+                        lineStyle: {
+                            normal: {
+                                width: 1.2, // 加粗轨迹线
+                                opacity: 0.8, // 提高透明度
+                                curveness: 0.2, // 减少弯曲度
+                                color: 'rgba(64, 158, 255, 0.3)' // 半透明主色调
+                            }
+                        },
+                        data: []
+                    },
+                    // 船东初始位置点系列 - 带脉冲效果
+                    {
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 11,
+                        rippleEffect: {
+                            brushType: 'fill', // 脉冲改为填充模式
+                            scale: 3, // 缩小扩散范围
+                            period: 5, // 延长脉冲周期
+                            color: 'rgba(64, 158, 255, 0.2)' // 半透明脉冲色
+                        },
+                        symbolSize: 8, // 缩小点尺寸
+                        itemStyle: {
+                            borderWidth: 2, // 添加白色描边
+                            borderColor: '#ffffff'
+                        },
+                        data: []
+                    },
+                    // 船厂位置点系列 - 带脉冲效果
+                    {
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 12,
+                        rippleEffect: {
+                            brushType: 'fill', // 脉冲改为填充模式
+                            scale: 3, // 缩小扩散范围
+                            period: 5, // 延长脉冲周期
+                            color: 'rgba(255, 107, 107, 0.2)' // 半透明脉冲色
+                        },
+                        symbolSize: 8, // 缩小点尺寸
+                        itemStyle: {
+                            borderWidth: 2, // 添加白色描边
+                            borderColor: '#ffffff'
+                        },
+                        data: []
+                    }
+                ]
+            });
+
+            // 初始化统计图表
+            currentStatsChart.setOption({
+                title: { text: '订单统计', left: 'center' },
+                legend: { data: ['中国', '韩国', '日本'], bottom: 10, left: 'center' },
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                polar: { radius: '70%' },
+                angleAxis: {
+                    type: 'category',
+                    data: ['集装箱船', '油船', '气体船', '散货船', '其他'],
+                    boundaryGap: false,
+                    startAngle: 90
+                },
+                radiusAxis: { type: 'value' },
+                series: [
+                    { type: 'bar', data: [], coordinateSystem: 'polar', stack: '总量', name: '中国', itemStyle: { color: '#409EFF' } },
+                    { type: 'bar', data: [], coordinateSystem: 'polar', stack: '总量', name: '韩国', itemStyle: { color: '#FF6B6B' } },
+                    { type: 'bar', data: [], coordinateSystem: 'polar', stack: '总量', name: '日本', itemStyle: { color: '#00BFA5' } }
+                ]
+            });
+
+            function updateChart(selectedDate) {
+                // 应用筛选条件
+                const filteredData = globalProcessedData.filter(d =>
+                    d.date === selectedDate && filterStatus[d.shipType]
+                );
+
+                // 处理轨迹线数据
+                const lineData = filteredData.map(d => ({
+                    fromName: d.船东,
+                    toName: d.船厂,
+                    coords: [[d.shipownerX, d.shipownerY], [d.shipyardX, d.shipyardY]],
+                    lineStyle: {
+                        color: d.color,
+                        width: d.lineWidth * 0.8
+                    },
+                    effect: {
+                        symbolSize: d.lineWidth * 2,
+                        color: d.color,
+                        trailWidth: d.lineWidth,
+                        trailColor: d.color
+                    },
+                    originalData: d
+                }));
+
+                // 处理船东位置数据
+                const shipownerPoints = filteredData.map(d => ({
+                    name: d.船东,
+                    value: [d.shipownerX, d.shipownerY],
+                    itemStyle: {
+                        color: d.color
+                    }
+                }));
+
+                // 处理船厂位置数据
+                const shipyardPoints = filteredData.map(d => ({
+                    name: d.船厂,
+                    value: [d.shipyardX, d.shipyardY],
+                    itemStyle: {
+                        color: d.color
+                    }
+                }));
+
+                currentChart.setOption({
+                    series: [
+                        { name: '订单轨迹', data: lineData },
+                        { name: '船东位置', data: shipownerPoints },
+                        { name: '船厂位置', data: shipyardPoints }
+                    ]
+                });
+
+                updateStats(selectedDate);
+            }
+
+            function showOrdersInRange(startIndex, endIndex) {
+                const uniqueDates = Array.from(new Set(globalProcessedData.map(d => d.date))).sort();
+                const selectedRange = uniqueDates.slice(startIndex, endIndex + 1);
+                currentSelectedRange = selectedRange;
+
+                // 应用筛选条件
+                const filteredData = globalProcessedData.filter(d =>
+                    selectedRange.includes(d.date) && filterStatus[d.shipType]
+                );
+
+                // 处理轨迹线数据
+                const lineData = filteredData.map(d => ({
+                    fromName: d.船东,
+                    toName: d.船厂,
+                    coords: [[d.shipownerX, d.shipownerY], [d.shipyardX, d.shipyardY]],
+                    lineStyle: {
+                        color: d.color,
+                        width: d.lineWidth * 0.8
+                    },
+                    effect: {
+                        symbolSize: d.lineWidth * 2,
+                        color: d.color,
+                        trailWidth: d.lineWidth,
+                        trailColor: d.color
+                    },
+                    originalData: d
+                }));
+
+                // 处理船东位置数据
+                const shipownerPoints = filteredData.map(d => ({
+                    name: d.船东,
+                    value: [d.shipownerX, d.shipownerY],
+                    itemStyle: {
+                        color: d.color
+                    }
+                }));
+
+                // 处理船厂位置数据
+                const shipyardPoints = filteredData.map(d => ({
+                    name: d.船厂,
+                    value: [d.shipyardX, d.shipyardY],
+                    itemStyle: {
+                        color: d.color
+                    }
+                }));
+
+                currentChart.setOption({
+                    series: [
+                        { name: '订单轨迹', data: lineData },
+                        { name: '船东位置', data: shipownerPoints },
+                        { name: '船厂位置', data: shipyardPoints }
+                    ]
+                });
+
+                updateStats(selectedRange);
+            }
+
+            function updateStats(dateOrRange) {
+                const isRange = Array.isArray(dateOrRange);
+                // 应用筛选条件
+                const filteredData = globalProcessedData.filter(d =>
+                    (isRange ? dateOrRange.includes(d.date) : d.date === dateOrRange) &&
+                    filterStatus[d.shipType]
+                );
+
+                const shipTypes = ['集装箱船', '油船', '气体船', '散货船', '其他'];
+                const countries = ['中国', '韩国', '日本'];
+                const countryData = {};
+
+                countries.forEach(country => {
+                    countryData[country] = shipTypes.map(() => 0);
+                });
+
+                filteredData.forEach(d => {
+                    const shipTypeIndex = shipTypes.indexOf(d.shipType) !== -1 ?
+                        shipTypes.indexOf(d.shipType) : shipTypes.indexOf('其他');
+
+                    if (countries.includes(d.country)) {
+                        countryData[d.country][shipTypeIndex]++;
+                    }
+                });
+
+                currentStatsChart.setOption({
+                    title: {
+                        text: isRange ?
+                            `订单统计 (${dateOrRange.length}天)` :
+                            `订单统计 (${formatDate(dateOrRange)})`
+                    },
+                    series: [
+                        { data: countryData['中国'] },
+                        { data: countryData['韩国'] },
+                        { data: countryData['日本'] }
+                    ]
+                });
+            }
+
+            // 时间轴事件监听
+            currentTimeline.on('click', params => {
+                const uniqueDates = Array.from(new Set(globalProcessedData.map(d => d.date))).sort();
+                updateChart(uniqueDates[params.dataIndex]);
+            });
+
+            currentTimeline.on('dataZoom', params => {
+                const uniqueDates = Array.from(new Set(globalProcessedData.map(d => d.date))).sort();
+                const startIndex = Math.round(params.start / 100 * uniqueDates.length);
+                const endIndex = Math.round(params.end / 100 * uniqueDates.length);
+                showOrdersInRange(startIndex, endIndex);
+            });
+
+            // 时间轴鼠标悬停效果
+            currentTimeline.on('mouseover', params => {
+                currentTimeline.dispatchAction({
+                    type: 'highlight',
+                    seriesIndex: 0,
+                    dataIndex: params.dataIndex
+                });
+            });
+
+            currentTimeline.on('mouseout', () => {
+                currentTimeline.dispatchAction({ type: 'downplay' });
+            });
+
+            // 轨迹线点击事件
+            currentChart.on('click', function(params) {
+                if (params.seriesName === '订单轨迹' && params.data.originalData) {
+                    const orderData = params.data.originalData;
+                    showOrderDetails(orderData);
+                }
+            });
+
+            // 地图背景点击事件
+            currentChart.on('click', function(params) {
+                if (params.componentType === 'geo') {
+                    hideOrderDetails();
+                }
+            });
+
+            // 初始显示部分数据
+            showOrdersInRange(0, Math.round(uniqueDates.length * 0.1));
+        }
+
+        // 更新筛选条件
+        function updateFilters() {
+            filterStatus = {
+                '集装箱船': document.getElementById('filter-container').checked,
+                '油船': document.getElementById('filter-oil').checked,
+                '气体船': document.getElementById('filter-gas').checked,
+                '散货船': document.getElementById('filter-bulk').checked,
+                '其他': document.getElementById('filter-other').checked
+            };
+
+            // 显示筛选状态
+            updateFilterStatus();
+
+            // 如果有当前选中的时间范围，重新应用筛选
+            if (currentSelectedRange) {
+                const uniqueDates = Array.from(new Set(globalProcessedData.map(d => d.date))).sort();
+                const startIndex = uniqueDates.indexOf(currentSelectedRange[0]);
+                const endIndex = uniqueDates.indexOf(currentSelectedRange[currentSelectedRange.length - 1]);
+                if (startIndex !== -1 && endIndex !== -1) {
+                    showOrdersInRange(startIndex, endIndex);
+                }
+            }
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('filter-container').checked = true;
+            document.getElementById('filter-oil').checked = true;
+            document.getElementById('filter-gas').checked = true;
+            document.getElementById('filter-bulk').checked = true;
+            document.getElementById('filter-other').checked = true;
+
+            filterStatus = {
+                '集装箱船': true,
+                '油船': true,
+                '气体船': true,
+                '散货船': true,
+                '其他': true
+            };
+
+            // 显示筛选状态
+            updateFilterStatus();
+
+            // 如果有当前选中的时间范围，重新应用筛选
+            if (currentSelectedRange) {
+                const uniqueDates = Array.from(new Set(globalProcessedData.map(d => d.date))).sort();
+                const startIndex = uniqueDates.indexOf(currentSelectedRange[0]);
+                const endIndex = uniqueDates.indexOf(currentSelectedRange[currentSelectedRange.length - 1]);
+                if (startIndex !== -1 && endIndex !== -1) {
+                    showOrdersInRange(startIndex, endIndex);
+                }
+            }
+        }
+
+        // 更新筛选状态提示
+        function updateFilterStatus() {
+            const statusEl = document.getElementById('filter-status');
+            const activeFilters = Object.keys(filterStatus).filter(type => filterStatus[type]);
+
+            if (activeFilters.length === Object.keys(filterStatus).length) {
+                statusEl.textContent = '显示全部船型';
+            } else if (activeFilters.length === 0) {
+                statusEl.textContent = '未选择任何船型';
+            } else {
+                statusEl.textContent = `显示: ${activeFilters.join('、')}`;
+            }
+
+            // 显示提示
+            statusEl.classList.add('show');
+
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // 显示订单详情
+        function showOrderDetails(orderData) {
+            const detailsEl = document.getElementById('order-details');
+            document.getElementById('detail-shipowner').textContent = orderData.船东;
+            document.getElementById('detail-shipyard').textContent = orderData.船厂;
+            document.getElementById('detail-ship-type-text').textContent = orderData.shipType;
+            document.getElementById('detail-ship-type').style.backgroundColor = orderData.color;
+            document.getElementById('detail-quantity').textContent = orderData.quantity;
+            document.getElementById('detail-date').textContent = formatDate(orderData.date);
+            document.getElementById('detail-country').textContent = orderData.country;
+
+            detailsEl.classList.add('show');
+        }
+
+        // 隐藏订单详情
+        function hideOrderDetails() {
+            document.getElementById('order-details').classList.remove('show');
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+            }
+            return dateString;
+        }
+    </script>
+</body>
+</html>
