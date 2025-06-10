@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>船舶行业三大指标历年变迁</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: #1a73e8;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            flex: 2;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 25px;
+        }
+        #chart {
+            height: 600px;
+            width: 100%;
+        }
+        .controls {
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .metric-selector {
+            display: flex;
+            gap: 12px;
+        }
+        .metric-btn {
+            background: #f0f4ff;
+            border: none;
+            color: #1a73e8;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .metric-btn.active {
+            background: #1a73e8;
+            color: white;
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
+        }
+        .metric-btn:hover:not(.active) {
+            background: #e0f0ff;
+        }
+        .info-panel {
+            flex: 1;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 25px;
+        }
+        .info-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #1a73e8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-title i {
+            font-size: 1.3rem;
+            color: #1a73e8;
+        }
+        .info-content {
+            line-height: 1.7;
+            color: #555;
+        }
+        .highlight {
+            color: #1a73e8;
+            font-weight: 600;
+        }
+        .data-point {
+            background: #f0f4ff;
+            border-left: 3px solid #1a73e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .chart-container, .info-panel {
+                flex: none;
+                width: 100%;
+            }
+            #chart {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>船舶行业三大指标历年变迁</h1>
+            <p class="subtitle">动态展示2000-2022年造船产量、新承接订单量与年底手持订单量的变化趋势，分析船舶行业发展轨迹</p>
+        </header>
+
+        <div class="main-content">
+            <div class="chart-container">
+                <div class="controls">
+                    <div class="metric-selector">
+                        <button class="metric-btn active" data-metric="dwt">万载重吨</button>
+                        <button class="metric-btn" data-metric="gt">万总吨</button>
+                        <button class="metric-btn" data-metric="cgt">万修正总吨</button>
+                    </div>
+                </div>
+                <div id="chart"></div>
+                <div class="data-point" id="dataPoint">
+                    <div id="pointDetails">点击图表上的数据点查看详细信息</div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-title">
+                    <i>📊</i> 数据分析与行业洞察
+                </div>
+                <div class="info-content">
+                    <p>通过三大指标动态图表分析，我们可以观察到：</p>
+                    <ul>
+                        <li>2000-2010年是船舶行业的<span class="highlight">黄金发展期</span>，三大指标均呈现快速增长</li>
+                        <li>2011-2016年行业经历<span class="highlight">深度调整</span>，受全球金融危机影响指标明显下滑</li>
+                        <li>2017-2022年行业<span class="highlight">逐步复苏</span>，新承接订单量在2021年达到近年峰值</li>
+                        <li>2022年底手持订单量较2020年增长<span class="highlight">42%</span>，显示行业复苏态势</li>
+                    </ul>
+
+                    <!-- 新增单位含义介绍 -->
+                    <h3 style="color: #1a73e8; margin: 15px 0; font-size: 1.1rem;">单位说明：</h3>
+                    <ul>
+                        <li><strong>万载重吨（DWT）</strong>：表示船舶载重能力，是船舶装载货物重量的指标</li>
+                        <li><strong>万总吨（GT）</strong>：衡量船舶容积的单位，反映船舶大小和运输能力</li>
+                        <li><strong>万修正总吨（CGT）</strong>：综合考虑船舶吨位、类型和复杂度的换算单位，用于比较不同类型船舶的工作量</li>
+                    </ul>
+
+                    <p>注：数据来源于行业统计，展示了以万载重吨/万总吨/万修正总吨为单位的三大核心指标变化。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2023 船舶行业数据分析 | 数据来源：09-22三大指标.xlsx | 可视化：ECharts</p>
+        </div>
+
+        <script>
+            // 三大指标数据（移除了color属性）
+            const metrics = {
+                dwt: {
+                    name: '万载重吨',
+                    shipProduction: [4592,4637,5004,5568,6194,7023,7548,8060,9130,11640,15060,16250,15340,10820,9120,9660,10060,9770,8020,9900,8850,8640,8110],
+                    newOrders: [6762,4537,5289,11623,10472,9900,18110,27050,16500,4110,13050,7210,4900,15820,11740,10970,3060,8010,8690,6900,5640,12300,8810],
+                    handheldOrders: [11321,11238,11565,17671,21987,24235,34610,53020,59730,51760,47810,37750,26040,29830,32520,31540,22450,20470,21970,18960,16260,20800,23080]
+                },
+                gt: {
+                    name: '万总吨',
+                    shipProduction: [3090,3120,3370,3640,4060,4590,5210,5640,6580,7700,9660,10090,9430,7040,6370,6750,6650,6540,5730,6550,5740,6040,5530],
+                    newOrders: [4590,3020,3470,7690,7420,6850,11590,17110,9730,2240,7780,5520,3650,10410,7890,7680,2160,5100,5960,4820,3870,9070,7470],
+                    handheldOrders: [7830,7720,7830,11880,15220,17450,23540,34700,37470,31930,29250,24120,17530,20290,21940,21580,16020,14560,15410,13790,12300,16080,19030]
+                },
+                cgt: {
+                    name: '万修正总吨',
+                    shipProduction: [1820,1818,2004,2158,2403,2625,3134,3480,4160,4450,5170,4960,4600,3690,3510,3690,3490,3350,3060,3310,2900,3290,3080],
+                    newOrders: [2598,1832,2044,4171,4407,4180,5803,8950,4630,980,3780,3070,2290,5330,4260,3800,1260,2520,3180,2700,2020,4790,4460],
+                    handheldOrders: [4450,4483,4557,6596,8622,10198,12870,19000,19330,15970,14340,12040,9450,10870,11810,11380,8750,7950,8360,7870,7170,9120,11060]
+                }
+            };
+
+            // 年份数据
+            const years = [];
+            for (let year = 2000; year <= 2022; year++) {
+                years.push(year.toString());
+            }
+
+            // 初始化图表
+            const chartDom = document.getElementById('chart');
+            const myChart = echarts.init(chartDom);
+
+            // 当前选中的指标
+            let currentMetric = 'dwt';
+            let currentDataPoint = null;
+
+            // 现代化颜色方案
+            const FIXED_COLORS = {
+                production: '#ff6b6b',    // 造船产量
+                orders: '#8b5cf6',        // 新承接订单量
+                handheld: '#00f2fe'       // 年底手持订单量
+            };
+
+            // 渲染图表函数
+            function renderChart(metricType) {
+                const metric = metrics[metricType];
+
+                const option = {
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderColor: 'rgba(26, 115, 232, 0.2)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: '#333',
+                            fontSize: 14
+                        },
+                        axisPointer: {
+                            type: 'line',
+                            lineStyle: {
+                                color: 'rgba(26, 115, 232, 0.3)'
+                            }
+                        },
+                        formatter: function(params) {
+                            const year = params[0].name;
+                            let result = `<div style="font-weight:bold;margin-bottom:5px;">${year}年</div>`;
+                            params.forEach(param => {
+                                const value = param.value.toLocaleString();
+                                result += `
+                                    <div style="display:flex;align-items:center;margin:3px 0;">
+                                        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${param.color};margin-right:5px;"></span>
+                                        ${param.seriesName}: <span style="font-weight:bold;margin-left:5px;">${value}</span> ${metric.name}
+                                    </div>
+                                `;
+                            });
+                            return result;
+                        }
+                    },
+                    legend: {
+                        data: ['造船产量', '新承接订单量', '年底手持订单量'],
+                        textStyle: {
+                            color: '#666',
+                            fontSize: 14
+                        },
+                        right: '5%',
+                        top: 20,
+                        itemWidth: 12,
+                        itemHeight: 12
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '14%',
+                        top: '15%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: years,
+                        axisLine: {
+                            lineStyle: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        axisLabel: {
+                            color: '#666',
+                            interval: 2
+                        },
+                        axisTick: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: metric.name,
+                        nameTextStyle: {
+                            color: '#666',
+                            padding: [0, 0, 0, -40]
+                        },
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        axisLabel: {
+                            color: '#666',
+                            formatter: function(value) {
+                                if (value >= 10000) {
+                                    return (value / 10000).toFixed(1) + '万';
+                                }
+                                return value;
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    dataZoom: [
+                        {
+                            type: 'inside',
+                            start: 0,
+                            end: 100
+                        },
+                        {
+                            show: true,
+                            type: 'slider',
+                            bottom: 20,
+                            start: 0,
+                            end: 100,
+                            backgroundColor: 'rgba(0,0,0,0.03)',
+                            fillerColor: 'rgba(26, 115, 232, 0.2)',
+                            borderColor: 'transparent',
+                            textStyle: {
+                                color: '#666'
+                            },
+                            handleStyle: {
+                                color: '#1a73e8'
+                            }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '造船产量',
+                            type: 'line',
+                            data: metric.shipProduction,
+                            symbol: 'circle',
+                            symbolSize: 8,
+                            smooth: true,
+                            lineStyle: {
+                                width: 4,
+                                color: FIXED_COLORS.production // 固定为天空蓝
+                            },
+                            itemStyle: {
+                                color: FIXED_COLORS.production,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    color: '#fff',
+                                    borderColor: FIXED_COLORS.production
+                                }
+                            },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: echarts.color.lift(FIXED_COLORS.production, 0.8) },
+                                    { offset: 1, color: echarts.color.lift(FIXED_COLORS.production, 0.1) }
+                                ])
+                            },
+                            markPoint: {
+                                data: [
+                                    { type: 'max', name: '最大值' },
+                                    { type: 'min', name: '最小值' }
+                                ]
+                            }
+                        },
+                        {
+                            name: '新承接订单量',
+                            type: 'line',
+                            data: metric.newOrders,
+                            symbol: 'circle',
+                            symbolSize: 8,
+                            smooth: true,
+                            lineStyle: {
+                                width: 4,
+                                color: FIXED_COLORS.orders // 固定为紫丁香
+                            },
+                            itemStyle: {
+                                color: FIXED_COLORS.orders,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    color: '#fff',
+                                    borderColor: FIXED_COLORS.orders
+                                }
+                            },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: echarts.color.lift(FIXED_COLORS.orders, 0.8) },
+                                    { offset: 1, color: echarts.color.lift(FIXED_COLORS.orders, 0.1) }
+                                ])
+                            }
+                        },
+                        {
+                            name: '年底手持订单量',
+                            type: 'line',
+                            data: metric.handheldOrders,
+                            symbol: 'circle',
+                            symbolSize: 8,
+                            smooth: true,
+                            lineStyle: {
+                                width: 4,
+                                color: FIXED_COLORS.handheld // 固定为琥珀橙
+                            },
+                            itemStyle: {
+                                color: FIXED_COLORS.handheld,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    color: '#fff',
+                                    borderColor: FIXED_COLORS.handheld
+                                }
+                            },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: echarts.color.lift(FIXED_COLORS.handheld, 0.8) },
+                                    { offset: 1, color: echarts.color.lift(FIXED_COLORS.handheld, 0.1) }
+                                ])
+                            }
+                        }
+                    ]
+                };
+
+                myChart.setOption(option);
+
+                // 添加点击事件
+                myChart.off('click');
+                myChart.on('click', function(params) {
+                    currentDataPoint = params;
+                    showDataPoint(params);
+                });
+            }
+
+            // 显示数据点详细信息
+            function showDataPoint(params) {
+                const metric = metrics[currentMetric];
+                const dataPointEl = document.getElementById('dataPoint');
+                const detailsEl = document.getElementById('pointDetails');
+
+                if (params.componentType === 'series') {
+                    const year = params.name;
+                    const seriesName = params.seriesName;
+                    const value = params.value.toLocaleString();
+
+                    // 获取固定颜色对应的名称
+                    let colorName = '';
+                    if (params.color === FIXED_COLORS.production) {
+                        colorName = '天空蓝';
+                    } else if (params.color === FIXED_COLORS.orders) {
+                        colorName = '紫丁香';
+                    } else if (params.color === FIXED_COLORS.handheld) {
+                        colorName = '琥珀橙';
+                    }
+
+                    detailsEl.innerHTML = `
+                        <div style="font-size:1.1rem;font-weight:bold;margin-bottom:8px;">${year}年 ${seriesName}</div>
+                        <div>数值: <span style="font-weight:bold;color:#1a73e8;">${value}</span> ${metric.name}</div>
+                        <div>颜色: <span style="font-weight:bold;color:${params.color};">${colorName}</span></div>
+                        <div style="margin-top:8px;font-size:0.9rem;opacity:0.8;">点击图表其他位置查看其他数据点</div>
+                    `;
+
+                    dataPointEl.style.display = 'block';
+                }
+            }
+
+            // 初始化图表
+            renderChart(currentMetric);
+
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+
+            // 切换指标按钮事件
+            document.querySelectorAll('.metric-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 更新按钮状态
+                    document.querySelectorAll('.metric-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // 更新当前指标
+                    currentMetric = this.getAttribute('data-metric');
+
+                    // 重新渲染图表
+                    renderChart(currentMetric);
+
+                    // 如果之前有选中的数据点，尝试重新显示
+                    if (currentDataPoint) {
+                        showDataPoint(currentDataPoint);
+                    }
+                });
+            });
+        </script>
+        </div>
+    </body>
+</html>
