@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2019-2023年五大船型新承接订单载重吨堆叠面积图</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+</head>
+
+<body>
+    <div id="chart" style="width: 100vw; height: 100vh;"></div>
+    <script>
+        // 初始化 ECharts 实例
+        const myChart = echarts.init(document.getElementById('chart'));
+
+        // 准备数据
+        const years = ['2019年底', '2020年底', '2021年底', '2022年底', '2023年底'];
+        const shipTypes = ['油船', '气体船', '散货船', '集装箱船', '其他'];
+        const data = [
+            [6771366, 6711070, 8113034, 3219689, 35500000],
+            [598090, 1097150, 1061696, 4481800, 11300000],
+            [18127983, 15032864, 32198142, 18445160, 45300000],
+            [3052648, 5320173, 27383604, 16370296, 17500000],
+            [2000350, 1334654, 2671881, 3419838, 6200000]
+        ];
+
+        // 配置图表选项
+        const option = {
+            title: {
+                text: '五大船型新承接订单载重吨堆叠面积图（2019 - 2023）'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: shipTypes
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: years
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+
+                {
+                    "name": "油船",
+                    "type": "line",
+                    "stack": "总量",
+                    "areaStyle": {},
+                    "emphasis": {
+                        "focus": "series"
+                    },
+                    "data": [6771366, 6711070, 8113034, 3219689, 35500000]
+                },
+
+                {
+                    "name": "集装箱船",
+                    "type": "line",
+                    "stack": "总量",
+                    "areaStyle": {},
+                    "emphasis": {
+                        "focus": "series"
+                    },
+                    "data": [3052648, 5320173, 27383604, 16370296, 17500000]
+                },
+
+                {
+                    "name": "散货船",
+                    "type": "line",
+                    "stack": "总量",
+                    "areaStyle": {},
+                    "emphasis": {
+                        "focus": "series"
+                    },
+                    "data": [18127983, 15032864, 32198142, 18445160, 45300000]
+                },
+
+                {
+                    "name": "气体船",
+                    "type": "line",
+                    "stack": "总量",
+                    "areaStyle": {},
+                    "emphasis": {
+                        "focus": "series"
+                    },
+                    "data": [598090, 1097150, 1061696, 4481800, 11300000]
+                },
+
+                {
+                    "name": "其他",
+                    "type": "line",
+                    "stack": "总量",
+                    "areaStyle": {},
+                    "emphasis": {
+                        "focus": "series"
+                    },
+                    "data": [2000350, 1334654, 2671881, 3419838, 6200000]
+                },
+
+            ]
+        };
+
+        // 使用配置项显示图表
+        myChart.setOption(option);
+    </script>
+</body>
+
+</html>
