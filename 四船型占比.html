@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四种船型订单量对比分析</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      margin: 0;
+      padding: 15px;
+      background: #f8f0e3;
+      color: #5d4037;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background: #fef9e7 ;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(244, 164, 96, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(244, 164, 96, 0.3);
+    }
+
+    h1 {
+      color: #e65100;
+      margin-bottom: 12px;
+      font-size: 2.0rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      color: #8d6e63;
+      font-size: 1.0rem;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 450px;
+      margin-bottom: 25px;
+      background:#eafaf1;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid rgba(244, 164, 96, 0.2);
+    }
+
+    .controls {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 15px;
+      background: #eafaf1;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 40px;
+      background: linear-gradient(to right, #ff9800, #ff6f00);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+      min-width: 160px;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+    }
+
+    button.active {
+      background: linear-gradient(to right, #43a047, #795548);
+      box-shadow: 0 4px 12px rgba(67, 160, 71, 0.4);
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(230, 150, 70, 0.2);
+      border-radius: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 1.0rem;
+      font-weight: bold;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      color: #8d6e63;
+      font-size: 0.9rem;
+      padding-top: 15px;
+      border-top: 1px solid rgba(244, 164, 96, 0.3);
+    }
+
+    .data-highlight {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .highlight-card {
+      background: rgba(255, 235, 215, 0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      border: 1px solid rgba(244, 164, 96, 0.3);
+      padding: 18px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .highlight-card::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 184, 108, 0.1);
+      border-radius: 50%;
+      z-index: 0;
+      transition: all 0.5s ease;
+    }
+
+    .highlight-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -5px rgba(0, 0, 0, 0.03);
+    }
+
+    .highlight-card:hover::before {
+      transform: scale(1.5);
+    }
+
+    .highlight-card h4 {
+      margin: 0 0 10px 0;
+      font-size: 1.0rem;
+      font-weight: 500;
+      color: #8d6e63;
+    }
+
+    .highlight-card p {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #e65100, #ff8f00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 8px rgba(230, 81, 0, 0.1);
+    }
+
+    .highlight-card.green {
+      border-left: 3px solid #AED6F1;
+    }
+
+    .highlight-card.red {
+      border-left: 3px solid #ABEBC6;
+    }
+
+    .highlight-card.purple {
+      border-left: 3px solid #D7BDE2;
+    }
+
+    .highlight-card.blue {
+      border-left: 3px solid #2196f3;
+    }
+
+    @media (max-width: 900px) {
+      .data-highlight {
+        flex-wrap: wrap;
+      }
+
+      .highlight-card {
+        flex: 0 0 calc(50% - 10px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px 12px;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      button {
+        width: 100%;
+        max-width: 280px;
+      }
+
+      .highlight-card {
+        flex: 0 0 100%;
+      }
+
+      .chart-container {
+        height: 380px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+
+    /* Animation effects */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header, .data-highlight, .controls, .chart-container, .legend {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .data-highlight { animation-delay: 0.2s; }
+    .controls { animation-delay: 0.4s; }
+    .chart-container { animation-delay: 0.6s; }
+    .legend { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>四种船型订单量对比分析 (2013-2023)</h1>
+      <p class="subtitle">本报告展示了油船、散货船、集装箱船和液化天然气船在过去11年的新船订单量变化趋势，通过多种可视化方式帮助分析市场动态</p>
+    </div>
+
+    <div class="data-highlight">
+      <div class="highlight-card">
+        <h4>2023年总订单量</h4>
+        <p>7,982.3</p>
+      </div>
+      <div class="highlight-card green">
+        <h4>增长最快船型</h4>
+        <p>液化天然气船</p>
+      </div>
+      <div class="highlight-card red">
+        <h4>下降最明显</h4>
+        <p>散货船</p>
+      </div>
+      <div class="highlight-card purple">
+        <h4>波动最大</h4>
+        <p>集装箱船</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-bar" class="active">堆叠柱状图</button>
+      <button id="btn-line">折线图</button>
+    </div>
+
+    <div class="chart-container" id="mainChart"></div>
+
+    <div class="legend" id="chartLegend"></div>
+
+    <div class="footer">
+      <p>数据来源：国际船舶市场报告 | 最后更新：2024年1月</p>
+    </div>
+  </div>
+
+  <script>
+    // 初始化 ECharts 实例
+    var myChart = echarts.init(document.getElementById("mainChart"));
+
+    // 原始数据
+    var years = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023];
+    var data = {
+      油船: [3494, 2519, 4972, 1191, 3360, 2560, 2515, 2392, 2075, 909, 2871],
+      散货船: [10416, 6341, 2964, 1066, 4324, 4358, 3264, 2460, 5206, 3580, 3337],
+      集装箱船: [215.6, 116.8, 224.3, 30.8, 82.0, 125.6, 77.8, 106.3, 448.7, 284.1, 153.3],
+      液化天然气船: [345, 603, 275, 77, 142, 631, 481, 484, 690, 1734, 621],
+    };
+
+    // 颜色映射 - 改为暖色调
+    var colors = {
+      油船: "#E67E22",   // 橙色
+      散货船: "#58D68D",  // 绿色
+      集装箱船: "#C39BD3", // 紫色
+      液化天然气船: "#3498DB", // 蓝色
+    };
+
+    // 生成图例
+    function createLegend() {
+      var legendContainer = document.getElementById("chartLegend");
+      legendContainer.innerHTML = "";
+      Object.keys(data).forEach((type) => {
+        var item = document.createElement("div");
+        item.className = "legend-item";
+        var colorBox = document.createElement("div");
+        colorBox.className = "legend-color";
+        colorBox.style.backgroundColor = colors[type];
+        var text = document.createElement("span");
+        text.textContent = type;
+        item.appendChild(colorBox);
+        item.appendChild(text);
+        legendContainer.appendChild(item);
+      });
+    }
+    createLegend();
+
+    // 通用配置（tooltip、坐标轴等）
+    var commonOption = {
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        formatter: function (params) {
+          let res = `<div style="font-weight:bold;margin-bottom:8px;font-size:14px;color:#e65100;">${params[0].name}年</div>`;
+          params.forEach((item) => {
+            res += `<div style="display:flex;align-items:center;margin-bottom:5px;">
+                      <div style="width:10px;height:10px;border-radius:50%;background:${item.color};margin-right:6px;"></div>
+                      <div style="flex:1;color:#5d4037;">${item.seriesName}:</div>
+                      <div style="font-weight:bold;color:#3e2723;">${item.value.toLocaleString()}</div>
+                    </div>`;
+          });
+          return res;
+        },
+        backgroundColor: 'rgba(245, 216, 186, 0.95)',
+        borderColor: '#ff9800',
+        borderWidth: 1,
+        padding: 12,
+        textStyle: { color: '#5d4037', fontSize: 13 }
+      },
+      grid: { left: "3%", right: "4%", bottom: "10%", top: "15%", containLabel: true },
+      xAxis: {
+        type: "category",
+        data: years,
+        axisLine: { lineStyle: { color: '#a1887f' } },
+        axisLabel: { color: '#8d6e63', fontSize: 11 },
+        axisTick: { show: false }
+      },
+      yAxis: {
+        type: "value",
+        name: "新船订单量/万载重吨",
+        nameTextStyle: { color: '#8d6e63', fontSize: 12, padding: [0, 0, 0, 10] },
+        min: 0,
+        axisLine: { lineStyle: { color: '#a1887f' } },
+        axisLabel: {
+          color: '#8d6e63',
+          formatter: (val) => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val
+        },
+        splitLine: { lineStyle: { color: 'rgba(161, 136, 127, 0.3)', type: 'dashed' } }
+      },
+      legend: {
+        data: Object.keys(data),
+        bottom: 10,
+        textStyle: { color: '#8d6e63', fontSize: 12 }
+      },
+      toolbox: {
+        feature: {
+          saveAsImage: { title: "保存图片", name: "船型订单量分析" },
+          dataView: {
+            title: "数据视图",
+            readOnly: false,
+            lang: ['数据视图', '关闭', '刷新'],
+            backgroundColor: 'rgba(245, 216, 186, 0.95)',
+            textareaColor: 'rgba(245, 216, 186, 0.8)',
+            textareaBorderColor: '#ff9800',
+            textColor: '#5d4037',
+            buttonColor: '#ff9800',
+            buttonTextColor: '#fff'
+          }
+        },
+        right: 15,
+        top: 8,
+        iconStyle: {
+          borderColor: '#8d6e63'
+        },
+        emphasis: {
+          iconStyle: {
+            borderColor: '#e65100'
+          }
+        }
+      },
+      animation: true,
+      animationDuration: 1500,
+      animationEasing: 'cubicOut'
+    };
+
+    // 堆叠柱状图配置
+    function getBarOption() {
+      return {
+        ...commonOption,
+        title: {
+          text: "四种船型订单量堆叠柱状图",
+          left: "center",
+          top: 8,
+          textStyle: {
+            color: '#e65100',
+            fontSize: 18,
+            fontWeight: 'bold',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }
+        },
+        series: Object.keys(data).map((type) => ({
+          name: type,
+          type: "bar",
+          stack: "总量",
+          data: data[type],
+          itemStyle: {
+            color: colors[type],
+            borderRadius: [6, 6, 0, 0],
+            shadowBlur: 5,
+            shadowColor: 'rgba(0, 0, 0, 0.1)'
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 8,
+              shadowColor: 'rgba(0, 0, 0, 0.2)',
+              shadowOffsetX: 0,
+              shadowOffsetY: 2
+            }
+          }
+        })),
+      };
+    }
+
+    // 折线图配置
+    function getLineOption() {
+      return {
+        ...commonOption,
+        title: {
+          text: "四种船型订单量趋势折线图",
+          left: "center",
+          top: 8,
+          textStyle: {
+            color: '#e65100',
+            fontSize: 18,
+            fontWeight: 'bold',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }
+        },
+        series: Object.keys(data).map((type) => ({
+          name: type,
+          type: "line",
+          data: data[type],
+          symbol: "circle",
+          symbolSize: 8,
+          itemStyle: {
+            color: colors[type],
+            borderWidth: 2,
+            borderColor: 'rgba(255,255,255,0.8)'
+          },
+          lineStyle: {
+            width: 3,
+            shadowBlur: 6,
+            shadowColor: colors[type],
+            shadowOffsetY: 2
+          },
+          areaStyle: {
+            opacity: 0.2,
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: colors[type] },
+              { offset: 1, color: 'rgba(245, 216, 186, 0.5)' }
+            ])
+          },
+          smooth: true
+        })),
+      };
+    }
+
+    // 默认渲染「堆叠柱状图」
+    myChart.setOption(getBarOption());
+
+    // 按钮切换逻辑
+    function setActiveButton(btn) {
+      document.querySelectorAll(".controls button").forEach((b) => {
+        b.classList.remove("active");
+      });
+      btn.classList.add("active");
+    }
+
+    document.getElementById("btn-bar").onclick = () => {
+      setActiveButton(document.getElementById("btn-bar"));
+      myChart.setOption(getBarOption());
+    };
+    document.getElementById("btn-line").onclick = () => {
+      setActiveButton(document.getElementById("btn-line"));
+      myChart.setOption(getLineOption());
+    };
+
+    // 窗口resize适配
+    window.addEventListener("resize", () => myChart.resize());
+  </script>
+</body>
+</html>
