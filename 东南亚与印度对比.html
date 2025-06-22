@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>造船业实力对比 - 雷达图分析</title>
+    <title>造船业实力对比分析</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
@@ -47,36 +47,26 @@
     </style>
 </head>
 <body class="bg-gray-50 font-inter text-dark">
-    <!-- 导航栏 -->
-    <nav class="bg-white shadow-md fixed w-full z-10 transition-all duration-300" id="navbar">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
+    <!-- 顶部标题 -->
+    <header class="bg-white shadow-md py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-2 justify-center">
                 <i class="fa fa-ship text-primary text-2xl"></i>
-                <h1 class="text-xl font-bold text-primary">全球造船业分析平台</h1>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">中国、东南亚与印度造船业对比分析</h1>
             </div>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#" class="text-dark hover:text-primary transition-colors">首页</a>
-                <a href="#" class="text-primary font-medium">行业对比</a>
-                <a href="#" class="text-dark hover:text-primary transition-colors">数据中心</a>
-                <a href="#" class="text-dark hover:text-primary transition-colors">市场报告</a>
-                <a href="#" class="text-dark hover:text-primary transition-colors">关于我们</a>
-            </div>
-            <button class="md:hidden text-dark text-xl">
-                <i class="fa fa-bars"></i>
-            </button>
         </div>
-    </nav>
+    </header>
 
     <!-- 主内容区 -->
-    <main class="container mx-auto px-4 pt-24 pb-12">
+    <main class="container mx-auto px-4 py-8">
         <!-- 页面标题 -->
-        <div class="text-center mb-12">
-            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">造船业关键指标对比分析</h2>
-            <p class="text-neutral max-w-3xl mx-auto">通过雷达图直观展示中国、印度和东南亚地区在造船业各关键领域的实力对比，数据基于2024年行业报告。</p>
+        <div class="text-center mb-8">
+            <h2 class="text-[clamp(1.3rem,3vw,2rem)] font-bold text-dark mb-3">造船业关键指标对比分析</h2>
+            <p class="text-neutral max-w-3xl mx-auto text-sm md:text-base">通过雷达图直观展示中国、印度和东南亚地区在造船业各关键领域的实力对比，数据基于2024年行业报告。</p>
         </div>
 
         <!-- 控制面板 -->
-        <div class="bg-white rounded-xl p-6 mb-8 card-shadow hover-scale">
+        <div class="bg-white rounded-xl p-5 mb-7 card-shadow hover-scale">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h3 class="text-lg font-semibold mb-2">指标选择</h3>
@@ -118,7 +108,7 @@
         </div>
 
         <!-- 雷达图展示区 -->
-        <div class="bg-white rounded-xl p-6 card-shadow hover-scale">
+        <div class="bg-white rounded-xl p-5 card-shadow hover-scale">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold">造船业综合实力对比</h3>
                 <div class="flex space-x-2">
@@ -133,16 +123,16 @@
                     </button>
                 </div>
             </div>
-            <div class="h-[450px]" id="radarChart"></div>
+            <div class="h-[400px]" id="radarChart"></div>
             <div class="mt-4 text-sm text-neutral text-center">
                 <p>注：数据基于行业专家评估和公开报告，满分为10分</p>
             </div>
         </div>
 
         <!-- 分析结论 -->
-        <div class="bg-white rounded-xl p-6 mt-8 card-shadow hover-scale">
+        <div class="bg-white rounded-xl p-5 mt-7 card-shadow hover-scale">
             <h3 class="text-lg font-semibold mb-4">行业分析结论</h3>
-            <div class="prose max-w-none">
+            <div class="prose max-w-none text-sm md:text-base">
                 <p class="text-gray-700">从雷达图和详细数据可以看出，中国在造船业的综合实力上明显领先于印度和东南亚地区，特别是在技术能力、供应链完整性和基础设施方面优势显著。尽管印度和东南亚在劳动力成本上具有竞争力，但技术积累、产业配套和人才储备的不足使其短期内难以对中国的主导地位构成挑战。</p>
                 <p class="text-gray-700 mt-3">值得注意的是，东南亚在劳动力素质和政策支持方面表现较好，若未来加大技术投入和基础设施建设，可能在中低端船舶市场获得更多份额。而印度虽有政策扶持，但供应链短板和官僚效率问题仍需长期改善。</p>
             </div>
@@ -150,25 +140,13 @@
     </main>
 
     <!-- 页脚 -->
-    <footer class="bg-dark text-white py-8">
-        <div class="container mx-auto px-4 text-center">
+    <footer class="bg-dark text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center text-sm">
             <p>© 2024 全球造船业分析平台. 保留所有权利.</p>
         </div>
     </footer>
 
     <script>
-        // 导航栏滚动效果
-        window.addEventListener('scroll', function() {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 10) {
-                navbar.classList.add('py-2');
-                navbar.classList.add('shadow-lg');
-            } else {
-                navbar.classList.remove('py-2');
-                navbar.classList.remove('shadow-lg');
-            }
-        });
-
         // 初始化雷达图
         const radarChart = echarts.init(document.getElementById('radarChart'));
 
