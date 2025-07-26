@@ -146,63 +146,6 @@
             font-weight: 600;
         }
         
-        .grid {
-            display: grid;
-        }
-        
-        .grid-cols-2 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .gap-2 {
-            gap: 0.5rem;
-        }
-        
-        /* 复选框样式 */
-        .form-checkbox {
-            width: 1rem;
-            height: 1rem;
-            border-radius: 4px;
-            border: 1px solid #c9cdd4;
-            appearance: none;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .form-checkbox:checked {
-            background-color: #165dff;
-            border-color: #165dff;
-        }
-        
-        .form-checkbox:checked::after {
-            content: '';
-            position: absolute;
-            width: 4px;
-            height: 8px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-            top: 1px;
-            left: 5px;
-        }
-        
-        .inline-flex {
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .ml-1 {
-            margin-left: 0.25rem;
-        }
-        
-        .text-xs {
-            font-size: 0.75rem;
-        }
-        
-        .text-sm {
-            font-size: 0.875rem;
-        }
-        
         /* 按钮样式 */
         .btn-group {
             display: flex;
@@ -305,9 +248,16 @@
         
         /* 响应式调整 */
         @media (max-width: 768px) {
-            .grid-cols-2 {
-                grid-template-columns: 1fr;
+            .btn-group {
+                flex-wrap: wrap;
             }
+        }
+        
+        /* 新增样式：模式选择器样式 */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -322,11 +272,19 @@
             </div>
 
             <!-- 雷达图与控制面板组合区 -->
-            <div class="card-shadow p-4 mb-5 flex flex-col lg-flex-row gap-4">
+            <div class="card-shadow p-4 mb-5">
                 <!-- 雷达图展示区 -->
-                <div class="w-full lg-w-2-3">
+                <div class="w-full">
+                    <!-- 模式选择器移至雷达图上方 -->
+                    <div class="mode-selector">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="comparisonMode">综合对比</button>
+                            <button class="btn btn-light" id="detailMode">细节分析</button>
+                        </div>
+                    </div>
+                    
                     <div class="flex justify-between items-center mb-3">
-                        <h3>造船业综合实力对比</h3>
+                        
                         <div class="flex space-x-1">
                             <button class="tag-btn" id="toggleChina">
                                 <span class="tag-indicator china"></span>中国
@@ -342,48 +300,6 @@
                     <div class="radar-container" id="radarChart"></div>
                     <div class="mt-3 text-xs text-neutral text-center">
                         <p>注：数据基于行业专家评估和公开报告，满分为10分</p>
-                    </div>
-                </div>
-
-                <!-- 右侧面板：控制面板和分析结论 -->
-                <div class="w-full lg-w-1-3 flex flex-col gap-4">
-                    <!-- 控制面板 -->
-                    <div class="bg-light rounded-lg control-panel">
-                        <h3 class="mb-2">指标选择</h3>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox" checked id="tech">
-                                <span class="ml-1 text-sm">技术能力</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox" checked id="supplyChain">
-                                <span class="ml-1 text-sm">供应链完整性</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox" checked id="infrastructure">
-                                <span class="ml-1 text-sm">基础设施</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox" checked id="labor">
-                                <span class="ml-1 text-sm">劳动力素质</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox" checked id="policy">
-                                <span class="ml-1 text-sm">政策支持</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox" checked id="cost">
-                                <span class="ml-1 text-sm">成本竞争力</span>
-                            </label>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <h3 class="mb-2">对比模式</h3>
-                            <div class="btn-group">
-                                <button class="btn btn-primary" id="comparisonMode">综合对比</button>
-                                <button class="btn btn-light" id="detailMode">细节分析</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -570,87 +486,6 @@
             radarOption.series[2].data[0].value = [4.0, 4.5, 5.0, 6.0, 6.5, 9.0];
             radarChart.setOption(radarOption);
         });
-
-        // 指标选择交互
-        const checkboxes = {
-            tech: document.getElementById('tech'),
-            supplyChain: document.getElementById('supplyChain'),
-            infrastructure: document.getElementById('infrastructure'),
-            labor: document.getElementById('labor'),
-            policy: document.getElementById('policy'),
-            cost: document.getElementById('cost')
-        };
-
-        function updateRadarChart() {
-            const activeIndicators = [];
-            const chinaValues = [];
-            const indiaValues = [];
-            const southeastValues = [];
-
-            // 根据选中的指标更新雷达图
-            if (checkboxes.tech.checked) {
-                activeIndicators.push({ name: '技术能力', max: 10 });
-                chinaValues.push(8.9);
-                indiaValues.push(3.2);
-                southeastValues.push(4.7);
-            }
-
-            if (checkboxes.supplyChain.checked) {
-                activeIndicators.push({ name: '供应链完整性', max: 10 });
-                chinaValues.push(8.5);
-                indiaValues.push(3.8);
-                southeastValues.push(5.2);
-            }
-
-            if (checkboxes.infrastructure.checked) {
-                activeIndicators.push({ name: '基础设施', max: 10 });
-                chinaValues.push(9.2);
-                indiaValues.push(3.5);
-                southeastValues.push(5.8);
-            }
-
-            if (checkboxes.labor.checked) {
-                activeIndicators.push({ name: '劳动力素质', max: 10 });
-                chinaValues.push(8.0);
-                indiaValues.push(4.1);
-                southeastValues.push(6.2);
-            }
-
-            if (checkboxes.policy.checked) {
-                activeIndicators.push({ name: '政策支持', max: 10 });
-                chinaValues.push(8.7);
-                indiaValues.push(6.5);
-                southeastValues.push(7.2);
-            }
-
-            if (checkboxes.cost.checked) {
-                activeIndicators.push({ name: '成本竞争力', max: 10 });
-                chinaValues.push(6.5);
-                indiaValues.push(8.2);
-                southeastValues.push(8.8);
-            }
-
-            // 如果没有选中任何指标，显示所有指标
-            if (activeIndicators.length === 0) {
-                for (const key in checkboxes) {
-                    checkboxes[key].checked = true;
-                }
-                updateRadarChart();
-                return;
-            }
-
-            // 更新雷达图配置
-            radarOption.radar.indicator = activeIndicators;
-            radarOption.series[0].data[0].value = chinaValues;
-            radarOption.series[1].data[0].value = indiaValues;
-            radarOption.series[2].data[0].value = southeastValues;
-            radarChart.setOption(radarOption);
-        }
-
-        // 为每个复选框添加事件监听器
-        for (const key in checkboxes) {
-            checkboxes[key].addEventListener('change', updateRadarChart);
-        }
     </script>
 </body>
-</html>
+</html>    
