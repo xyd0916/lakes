@@ -14,8 +14,7 @@
 
     body {
       font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-      margin: 0;
-      padding: 15px;
+      padding: 10px;
       background: #f8f0e3;
       color: #5d4037;
       min-height: 100vh;
@@ -23,61 +22,61 @@
 
     .container {
       max-width: 1200px;
-      margin: 20px auto;
+      margin: 10px auto;
       background: #fef9e7 ;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 15px;
       backdrop-filter: blur(6px);
       border: 1px solid rgba(244, 164, 96, 0.3);
     }
 
     .header {
       text-align: center;
-      margin-bottom: 25px;
-      padding-bottom: 20px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
       border-bottom: 1px solid rgba(244, 164, 96, 0.3);
     }
 
     h1 {
       color: #e65100;
-      margin-bottom: 12px;
-      font-size: 2.0rem;
+      margin-bottom: 8px;
+      font-size: 1.6rem;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       letter-spacing: 1px;
     }
 
     .subtitle {
       color: #8d6e63;
-      font-size: 1.0rem;
+      font-size: 0.9rem;
       max-width: 800px;
       margin: 0 auto;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .chart-container {
       width: 100%;
-      height: 450px;
-      margin-bottom: 25px;
+      height: 400px;
+      margin-bottom: 15px;
       background:#eafaf1;
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid rgba(244, 164, 96, 0.2);
     }
 
     .controls {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 12px;
-      padding: 15px;
+      gap: 10px;
+      padding: 10px;
       background: #eafaf1;
-      border-radius: 10px;
+      border-radius: 8px;
     }
 
     button {
-      padding: 12px 25px;
+      padding: 8px 18px;
       border: none;
       border-radius: 40px;
       background: linear-gradient(to right, #ff9800, #ff6f00);
@@ -85,9 +84,9 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-weight: bold;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-      min-width: 160px;
+      min-width: 140px;
       letter-spacing: 0.5px;
     }
 
@@ -105,50 +104,50 @@
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 20px;
-      margin-top: 15px;
-      padding: 15px;
+      gap: 15px;
+      margin-top: 10px;
+      padding: 10px;
       background: rgba(230, 150, 70, 0.2);
-      border-radius: 10px;
+      border-radius: 8px;
     }
 
     .legend-item {
       display: flex;
       align-items: center;
-      font-size: 1.0rem;
+      font-size: 0.9rem;
       font-weight: bold;
     }
 
     .legend-color {
-      width: 20px;
-      height: 20px;
-      margin-right: 10px;
-      border-radius: 4px;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      border-radius: 3px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .footer {
       text-align: center;
-      margin-top: 25px;
+      margin-top: 15px;
       color: #8d6e63;
-      font-size: 0.9rem;
-      padding-top: 15px;
+      font-size: 0.8rem;
+      padding-top: 10px;
       border-top: 1px solid rgba(244, 164, 96, 0.3);
     }
 
     .data-highlight {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-      margin-bottom: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .highlight-card {
       background: rgba(255, 235, 215, 0.7);
       backdrop-filter: blur(8px);
-      border-radius: 12px;
+      border-radius: 8px;
       border: 1px solid rgba(244, 164, 96, 0.3);
-      padding: 18px;
+      padding: 12px;
       text-align: center;
       transition: all 0.3s ease;
       position: relative;
@@ -158,10 +157,10 @@
     .highlight-card::before {
       content: '';
       position: absolute;
-      top: -40px;
-      right: -40px;
-      width: 80px;
-      height: 80px;
+      top: -30px;
+      right: -30px;
+      width: 60px;
+      height: 60px;
       background: rgba(255, 184, 108, 0.1);
       border-radius: 50%;
       z-index: 0;
@@ -169,8 +168,8 @@
     }
 
     .highlight-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -5px rgba(0, 0, 0, 0.03);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.05);
     }
 
     .highlight-card:hover::before {
@@ -178,15 +177,15 @@
     }
 
     .highlight-card h4 {
-      margin: 0 0 10px 0;
-      font-size: 1.0rem;
+      margin: 0 0 8px 0;
+      font-size: 0.9rem;
       font-weight: 500;
       color: #8d6e63;
     }
 
     .highlight-card p {
       margin: 0;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 700;
       background: linear-gradient(to right, #e65100, #ff8f00);
       -webkit-background-clip: text;
@@ -194,20 +193,20 @@
       text-shadow: 0 0 8px rgba(230, 81, 0, 0.1);
     }
 
-    .highlight-card.green {
+    .highlight-card.blue {
       border-left: 3px solid #AED6F1;
     }
 
-    .highlight-card.red {
+    .highlight-card.green {
       border-left: 3px solid #ABEBC6;
+    }
+
+    .highlight-card.red {
+      border-left: 3px solid #FADBD8;
     }
 
     .highlight-card.purple {
       border-left: 3px solid #D7BDE2;
-    }
-
-    .highlight-card.blue {
-      border-left: 3px solid #2196f3;
     }
 
     @media (max-width: 900px) {
@@ -216,13 +215,13 @@
       }
 
       .highlight-card {
-        flex: 0 0 calc(50% - 10px);
+        flex: 0 0 calc(50% - 8px);
       }
     }
 
     @media (max-width: 600px) {
       .container {
-        padding: 15px 12px;
+        padding: 10px 8px;
       }
 
       .controls {
@@ -232,7 +231,7 @@
 
       button {
         width: 100%;
-        max-width: 280px;
+        max-width: 250px;
       }
 
       .highlight-card {
@@ -240,28 +239,28 @@
       }
 
       .chart-container {
-        height: 380px;
+        height: 320px;
       }
 
       h1 {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
       }
     }
 
     /* Animation effects */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .header, .data-highlight, .controls, .chart-container, .legend {
-      animation: fadeIn 0.8s ease-out forwards;
+      animation: fadeIn 0.6s ease-out forwards;
     }
 
     .data-highlight { animation-delay: 0.2s; }
-    .controls { animation-delay: 0.4s; }
-    .chart-container { animation-delay: 0.6s; }
-    .legend { animation-delay: 0.8s; }
+    .controls { animation-delay: 0.3s; }
+    .chart-container { animation-delay: 0.4s; }
+    .legend { animation-delay: 0.5s; }
   </style>
 </head>
 <body>
@@ -296,7 +295,8 @@
     </div>
 
     <div class="chart-container" id="mainChart"></div>
-  
+    
+    <div class="legend" id="chartLegend"></div>
   </div>
 
   <script>
@@ -312,7 +312,7 @@
       液化天然气船: [345, 603, 275, 77, 142, 631, 481, 484, 690, 1734, 621],
     };
 
-    // 颜色映射 - 改为暖色调
+    // 颜色映射 - 暖色调
     var colors = {
       油船: "#E67E22",   // 橙色
       散货船: "#58D68D",  // 绿色
@@ -345,10 +345,10 @@
         trigger: "axis",
         axisPointer: { type: "shadow" },
         formatter: function (params) {
-          let res = `<div style="font-weight:bold;margin-bottom:8px;font-size:14px;color:#e65100;">${params[0].name}年</div>`;
+          let res = `<div style="font-weight:bold;margin-bottom:5px;font-size:13px;color:#e65100;">${params[0].name}年</div>`;
           params.forEach((item) => {
-            res += `<div style="display:flex;align-items:center;margin-bottom:5px;">
-                      <div style="width:10px;height:10px;border-radius:50%;background:${item.color};margin-right:6px;"></div>
+            res += `<div style="display:flex;align-items:center;margin-bottom:3px;">
+                      <div style="width:8px;height:8px;border-radius:50%;background:${item.color};margin-right:5px;"></div>
                       <div style="flex:1;color:#5d4037;">${item.seriesName}:</div>
                       <div style="font-weight:bold;color:#3e2723;">${item.value.toLocaleString()}</div>
                     </div>`;
@@ -358,10 +358,10 @@
         backgroundColor: 'rgba(245, 216, 186, 0.95)',
         borderColor: '#ff9800',
         borderWidth: 1,
-        padding: 12,
-        textStyle: { color: '#5d4037', fontSize: 13 }
+        padding: 10,
+        textStyle: { color: '#5d4037', fontSize: 12 }
       },
-      grid: { left: "3%", right: "4%", bottom: "10%", top: "15%", containLabel: true },
+      grid: { left: "3%", right: "4%", bottom: "15%", top: "10%", containLabel: true },
       xAxis: {
         type: "category",
         data: years,
@@ -372,7 +372,7 @@
       yAxis: {
         type: "value",
         name: "新船订单量/万载重吨",
-        nameTextStyle: { color: '#8d6e63', fontSize: 12, padding: [0, 0, 0, 10] },
+        nameTextStyle: { color: '#8d6e63', fontSize: 11, padding: [0, 0, 0, 8] },
         min: 0,
         axisLine: { lineStyle: { color: '#a1887f' } },
         axisLabel: {
@@ -382,9 +382,7 @@
         splitLine: { lineStyle: { color: 'rgba(161, 136, 127, 0.3)', type: 'dashed' } }
       },
       legend: {
-        data: Object.keys(data),
-        bottom: 10,
-        textStyle: { color: '#8d6e63', fontSize: 12 }
+        show: false // 隐藏ECharts内置图例，使用自定义图例
       },
       toolbox: {
         feature: {
@@ -401,8 +399,8 @@
             buttonTextColor: '#fff'
           }
         },
-        right: 15,
-        top: 8,
+        right: 10,
+        top: 5,
         iconStyle: {
           borderColor: '#8d6e63'
         },
@@ -413,7 +411,7 @@
         }
       },
       animation: true,
-      animationDuration: 1500,
+      animationDuration: 1200,
       animationEasing: 'cubicOut'
     };
 
@@ -424,10 +422,10 @@
         title: {
           text: "四种船型订单量堆叠柱状图",
           left: "center",
-          top: 8,
+          top: 5,
           textStyle: {
             color: '#e65100',
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 'bold',
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }
@@ -439,16 +437,16 @@
           data: data[type],
           itemStyle: {
             color: colors[type],
-            borderRadius: [6, 6, 0, 0],
-            shadowBlur: 5,
+            borderRadius: [4, 4, 0, 0],
+            shadowBlur: 3,
             shadowColor: 'rgba(0, 0, 0, 0.1)'
           },
           emphasis: {
             itemStyle: {
-              shadowBlur: 8,
+              shadowBlur: 6,
               shadowColor: 'rgba(0, 0, 0, 0.2)',
               shadowOffsetX: 0,
-              shadowOffsetY: 2
+              shadowOffsetY: 1
             }
           }
         })),
@@ -462,10 +460,10 @@
         title: {
           text: "四种船型订单量趋势折线图",
           left: "center",
-          top: 8,
+          top: 5,
           textStyle: {
             color: '#e65100',
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 'bold',
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }
@@ -475,17 +473,17 @@
           type: "line",
           data: data[type],
           symbol: "circle",
-          symbolSize: 8,
+          symbolSize: 7,
           itemStyle: {
             color: colors[type],
             borderWidth: 2,
             borderColor: 'rgba(255,255,255,0.8)'
           },
           lineStyle: {
-            width: 3,
-            shadowBlur: 6,
+            width: 2.5,
+            shadowBlur: 4,
             shadowColor: colors[type],
-            shadowOffsetY: 2
+            shadowOffsetY: 1
           },
           areaStyle: {
             opacity: 0.2,
