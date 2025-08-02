@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>造船业上下游产业关联演进分析</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+    body {
+      background-color: var(--bg-color); color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s; padding: 20px; min-height: 100vh;
+    }
+    :root {
+      --bg-color: #f4f7fa; --text-color: #333;
+      --card-bg: #ffffff; --primary-color: #1e90ff;
+      --accent-color: #ff6b6b; --shipbuilding-color: #4bc0c0;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    body.dark {
+      --bg-color: #1a1a1a; --text-color: #e0e0e0; --card-bg: #2c2c2c;
+    }
+    .container { max-width: 1400px; margin: 0 auto; text-align: center; }
+    h1 { font-size: 2.2rem; margin-bottom: 10px; color: var(--primary-color); }
+    p { font-size: 1.1rem; color: var(--text-color); margin-bottom: 20px; }
+    .year-buttons {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px;
+    }
+    .year-button {
+      padding: 10px 20px; font-size: 1rem; border: none; border-radius: 20px;
+      background-color: var(--primary-color); color: #fff; cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .year-button:hover { transform: scale(1.05); background-color: #1c86ee; }
+    .year-button.active { background-color: var(--accent-color); }
+    .content { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .card {
+      background-color: var(--card-bg); border-radius: 10px; padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    #sankeyChart { height: 600px; }
+    .pie-charts { display: flex; flex-direction: column; gap: 20px; }
+    .chart-container h3 {
+      font-size: 1.2rem; margin-bottom: 10px; color: var(--text-color);
+    }
+    #upstreamChart, #downstreamChart { height: 300px; }
+    .theme-toggle {
+      position: fixed; top: 20px; right: 20px; padding: 10px;
+      background-color: var(--primary-color); color: #fff;
+      border: none; border-radius: 50%; cursor: pointer;
+    }
+    .summary { margin-bottom: 20px; font-size: 1rem; color: var(--text-color); }
+    @media (max-width: 768px) {
+      .content { grid-template-columns: 1fr; }
+      h1 { font-size: 1.8rem; }
+      p { font-size: 1rem; }
+      .year-button { padding: 8px 16px; font-size: 0.9rem; }
+      #sankeyChart { height: 400px; }
+      #upstreamChart, #downstreamChart { height: 250px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+  <div class="container">
+    <h1>造船业上下游产业关联演进分析</h1>
+    <p>动态展示2002-2020年间造船业与上下游产业的价值流动与结构变化，揭示产业关联演变趋势</p>
+    <div class="year-buttons" id="yearButtons"></div>
+    <div class="summary" id="summary">加载数据中...</div>
+    <div class="content">
+      <div class="card"><div id="sankeyChart"></div></div>
+      <div class="pie-charts">
+        <div class="card chart-container">
+          <h3>上游产业占比</h3>
+          <div id="upstreamChart"></div>
+        </div>
+        <div class="card chart-container">
+          <h3>下游产业占比</h3>
+          <div id="downstreamChart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const years = [2002, 2007, 2012, 2017, 2018, 2020];
+    let currentYear = 2002;
+
+    const csvDataMap = {
+  2002: `Source,Target,Value
+船舶及浮动装置制造业,水上运输业,2510797
+船舶及浮动装置制造业,出口,1524556
+船舶及浮动装置制造业,渔业,741100
+装备制造与机械设备,船舶及浮动装置制造业,1239947
+基础原材料与能源工业,船舶及浮动装置制造业,1074778
+电气电子与仪器制造,船舶及浮动装置制造业,493156
+服务业与其他,船舶及浮动装置制造业,357267
+化工与材料加工,船舶及浮动装置制造业,290118`,
+
+  2007: `Source,Target,Value
+船舶及浮动装置制造业,出口,8792300
+船舶及浮动装置制造业,水上运输业,4529141
+船舶及浮动装置制造业,渔业,1087882
+基础原材料与能源工业,船舶及浮动装置制造业,4857624
+电气电子与仪器制造,船舶及浮动装置制造业,3941530
+装备制造与机械设备,船舶及浮动装置制造业,3708523
+服务业与其他,船舶及浮动装置制造业,1523069
+化工与材料加工,船舶及浮动装置制造业,1016752
+汽车与交通相关,船舶及浮动装置制造业,368061`,
+
+  2012: `Source,Target,Value
+船舶及相关装置,出口,22528696
+船舶及相关装置,水上运输业,3575955
+船舶及相关装置,渔产品,510776
+船舶及相关装置,金属制品、机械和设备修理服务,324001
+电气电子与仪器制造,船舶及相关装置,9218674
+基础原材料与能源工业,船舶及相关装置,9218299
+装备制造与机械设备,船舶及相关装置,7254729
+服务业与其他,船舶及相关装置,5861248
+化工与材料加工,船舶及相关装置,3294965
+汽车与交通相关,船舶及相关装置,536378`,
+
+  2017: `Source,Target,Value
+船舶及相关装置,出口,13963566
+船舶及相关装置,水上货物运输和运输辅助活动,3653904
+船舶及相关装置,采矿、冶金、建筑专用设备,1606811
+船舶及相关装置,渔产品,621885
+电气电子与仪器制造,船舶及相关装置,8831031
+装备制造与机械设备,船舶及相关装置,6838124
+服务业与其他,船舶及相关装置,5777425
+基础原材料与能源工业,船舶及相关装置,5516883
+化工与材料加工,船舶及相关装置,3324993
+汽车与交通相关,船舶及相关装置,710457`,
+
+  2018: `Source,Target,Value
+船舶及相关装置,出口,14552143
+船舶及相关装置,水上货物运输和运输辅助活动,3715765
+船舶及相关装置,采矿、冶金、建筑专用设备,1352721
+船舶及相关装置,渔产品,636883
+船舶及相关装置,金属制品、机械和设备修理服务,543791
+电气电子与仪器制造,船舶及相关装置,7195748
+装备制造与机械设备,船舶及相关装置,5244073
+基础原材料与能源工业,船舶及相关装置,4782151
+服务业与其他,船舶及相关装置,4646925
+化工与材料加工,船舶及相关装置,2624869
+汽车与交通相关,船舶及相关装置,432431`,
+
+  2020: `Source,Target,Value
+船舶及相关装置,出口,13194614
+船舶及相关装置,水上货物运输和运输辅助活动,4550661
+船舶及相关装置,采矿、冶金、建筑专用设备,1440980
+船舶及相关装置,渔产品,653482
+船舶及相关装置,金属制品、机械和设备修理服务,536243
+电气电子与仪器制造,船舶及相关装置,5649781
+装备制造与机械设备,船舶及相关装置,4300444
+服务业与其他,船舶及相关装置,3981834
+基础原材料与能源工业,船舶及相关装置,3751893
+化工与材料加工,船舶及相关装置,1952450
+汽车与交通相关,船舶及相关装置,252885`
+};
+
+const nodeColors = {
+  '船舶及浮动装置制造业': '#4bc0c0',
+  '船舶及相关装置': '#4bc0c0',
+  '出口': '#ff6b6b',
+  '水上运输业': '#ff6b6b',
+  '水上货物运输和运输辅助活动': '#ff6b6b',
+  '渔业': '#ff6b6b',
+  '渔产品': '#ff6b6b',
+  '采矿、冶金、建筑专用设备': '#ff6b6b',
+  '金属制品、机械和设备修理服务': '#ff6b6b',
+  '装备制造与机械设备': '#1e90ff',
+  '基础原材料与能源工业': '#1e90ff',
+  '电气电子与仪器制造': '#1e90ff',
+  '服务业与其他': '#1e90ff',
+  '化工与材料加工': '#1e90ff',
+  '汽车与交通相关': '#1e90ff'
+};
+
+    const sankeyChart = echarts.init(document.getElementById('sankeyChart'));
+    const upstreamChart = echarts.init(document.getElementById('upstreamChart'));
+    const downstreamChart = echarts.init(document.getElementById('downstreamChart'));
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    const yearButtons = document.getElementById('yearButtons');
+    years.forEach(year => {
+      const btn = document.createElement('button');
+      btn.className = 'year-button';
+      btn.textContent = year;
+      btn.onclick = () => selectYear(year);
+      yearButtons.appendChild(btn);
+    });
+
+    function processData(csv, year) {
+      const parsed = Papa.parse(csv.trim(), { header: true }).data;
+      const links = parsed
+        .map(r => ({ source: r.Source, target: r.Target, value: +r.Value }))
+        .filter(link => link.source !== link.target);  // ✅ 关键修复：去除自环
+
+      const nodes = [...new Set(links.flatMap(l => [l.source, l.target]))].map(name => ({ name }));
+
+      const centerNode = nodes.find(n => n.name.includes('船舶'))?.name || '船舶及浮动装置制造业';
+
+      const upstream = {}, downstream = {};
+      let totalUp = 0, totalDown = 0;
+      links.forEach(({ source, target, value }) => {
+        if (target === centerNode) { upstream[source] = (upstream[source] || 0) + value; totalUp += value; }
+        if (source === centerNode) { downstream[target] = (downstream[target] || 0) + value; totalDown += value; }
+      });
+
+      const upstreamData = Object.entries(upstream).map(([name, value]) => ({ name, value }));
+      const downstreamData = Object.entries(downstream).map(([name, value]) => ({ name, value }));
+      const summary = `在${year}年，上游产业中${upstreamData[0]?.name || '未知'}占比最高，下游产业中${downstreamData[0]?.name || '未知'}占比最高。`;
+      return { nodes, links, upstreamData, downstreamData, summary };
+    }
+
+    function updateCharts(year) {
+      const csv = csvDataMap[year];
+      const { nodes, links, upstreamData, downstreamData, summary } = processData(csv, year);
+
+      sankeyChart.setOption({
+        tooltip: { trigger: 'item' },
+        series: [{
+          type: 'sankey',
+          layout: 'none',
+          data: nodes.map(n => ({ ...n, itemStyle: { color: nodeColors[n.name] || '#ccc' } })),
+          links,
+          lineStyle: { color: 'gradient', curveness: 0.5 }
+        }]
+      });
+
+      const roseOption = (title, data) => ({
+        tooltip: { trigger: 'item' },
+        series: [{
+          name: title,
+          type: 'pie',
+          roseType: 'area',
+          radius: [30, 100],
+          center: ['50%', '50%'],
+          data,
+          label: { formatter: '{b}: {d}%' }
+        }]
+      });
+
+      upstreamChart.setOption(roseOption('上游产业', upstreamData));
+      downstreamChart.setOption(roseOption('下游产业', downstreamData));
+      document.getElementById('summary').textContent = summary;
+
+      document.querySelectorAll('.year-button').forEach(btn =>
+        btn.classList.toggle('active', +btn.textContent === year)
+      );
+    }
+
+    function selectYear(year) {
+      currentYear = year;
+      updateCharts(year);
+    }
+
+    updateCharts(currentYear);
+  </script>
+</body>
+</html>
+
